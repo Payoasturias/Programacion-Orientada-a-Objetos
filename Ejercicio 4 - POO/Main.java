@@ -1,3 +1,10 @@
+// Programación Orientada a Objetos
+// Universidad del Valle de Guatemala
+// Sección 40
+// Ejercicio 4 - Modelación con Herencia
+// Paolo Asturias
+// Carné: 25722
+
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
