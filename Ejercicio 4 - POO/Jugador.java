@@ -48,7 +48,7 @@ public abstract class Jugador extends Combatiente
         return items;
     }
 
-    public getCapacidadItems()
+    public int getCapacidadItems()
     {
         return capacidadItems;
     }
@@ -76,28 +76,29 @@ public abstract class Jugador extends Combatiente
     {
         if (indice < 0 || indice >= items.size())
         {
-            items.remove(indice);
-            return true;
+            return false;
         }
+        
+        items.remove(indice);
+        return true;
     }
 
     // Usar un item (el item se encarga de su efecto). Consumir decrementa usos/cantidad. Devuelve true si se aplico correctamente.
     public boolean usarItem(Item item, Batalla batalla, Combatiente objetivo)
     {
-        if (indice < 0 || indice >= items.size())
+        if (item == null || !items.contains(item))
         {
             return false;
         }
 
-        Item it = items.get(indice);
-        String res = it.aplicar(this, batalla, objetivo); // aplicar registra internamente en batalla si corresponde
+        String res = item.aplicar(this, batalla, objetivo); // aplicar registra internamente en batalla si corresponde
         batalla.registrarAccion(res);
-        it.consumir();
+        item.consumir();
 
-        if (it.getUsosRestantes() <= 0 && it.getCantidad() <= 0)
+        if (item.getUsosRestantes() <= 0 && item.getCantidad() <= 0)
         {
             // quitar del inventario
-            items.remove(indice);
+            items.remove(item);
         }
 
         return true;
@@ -164,4 +165,12 @@ public abstract class Jugador extends Combatiente
     // Las subclases (Guerrero/Explorador) implementan la logica del turno y devuelven logs.
     @Override
     public abstract ArrayList<String> tomarTurno(Batalla batalla);
+
+    // Implementación del método getTag() para la clase Jugador.
+    // Devuelve la etiqueta "[Jugador]" para identificar a este combatiente
+    @Override
+    public String getTag()
+    {
+        return " [Jugador]";
+    }
 }

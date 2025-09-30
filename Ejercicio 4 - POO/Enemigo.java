@@ -53,4 +53,13 @@ public abstract class Enemigo extends Combatiente
 
         return logs;
     }
+
+    // Implementación del método getTag() para la clase Enemy.
+    // Devuelve una cadena vacía ya que los enemigos no requieren una etiqueta especial durante la visualización de la batalla.
+    @Override
+    public String getTag()
+    {
+        return "";
+    }
+
 }

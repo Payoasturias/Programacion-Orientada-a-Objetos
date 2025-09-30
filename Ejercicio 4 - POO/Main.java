@@ -3,169 +3,196 @@ import java.util.Random;
 import java.util.Scanner;
 
 // Main.java
-// Punto de entrada: maneja el menú, imprime estado y registra/consume acciones.
-// ÚNICA clase que imprime en consola.
+// ÚNICA clase que imprime en consola. Orquesta selección de rol, menú y flujo de batalla.
 
 public class Main
 {
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("=== Naruto Shippuden - Prototipo Batalla por Turnos ===");
-        System.out.print("Introduce nombre del jugador: ");
-        String nombre = scanner.nextLine().trim();
-        if (nombre.isEmpty()) nombre = "Jugador";
+    public static void main(String[] args)
+    {
+        Scanner sc = new Scanner(System.in);
 
-        int opcion = 0;
-        while (opcion != 1 && opcion != 2) {
-            System.out.println("Elige rol:");
-            System.out.println("1) Guerrero (vida alta, ataque alto, capacidad de ítems = 5)");
-            System.out.println("2) Explorador (vida normal, ataque normal, capacidad de ítems = 10)");
-            System.out.print("Opción (1-2): ");
-            try { opcion = Integer.parseInt(scanner.nextLine().trim()); } catch (Exception e) { opcion = 0; }
+        // Crear jugador
+        System.out.println("=== BIENVENIDO AL COMBATE NARUTO SHIPPUDEN ===");
+        System.out.print("Ingrese el nombre de su personaje: ");
+        String nombre = sc.nextLine();
+
+        if (nombre.isEmpty()) 
+        {
+            nombre = "Jugador";
         }
+
+        System.out.println("Seleccione su rol:");
+        System.out.println("1. Guerrero (más vida y ataque, menos ítems)");
+        System.out.println("2. Explorador (vida y ataque normales, más ítems)");
+        int rol = sc.nextInt();
+        sc.nextLine();
 
         Jugador jugador;
-        if (opcion == 1) jugador = new Guerrero(nombre);
-        else jugador = new Explorador(nombre);
+        if (rol == 1)
+        {
+            jugador = new Guerrero(nombre);
+        }
+        
+        else
+        {
+            jugador = new Explorador(nombre);
+        }
 
-        // Generar enemigos aleatorios 1..3
-        Random rnd = new Random();
-        int cantidad = rnd.nextInt(3) + 1;
-        ArrayList<Enemigo> enemigos = new ArrayList<Enemigo>();
-        for (int i = 0; i < cantidad; i++) {
-            boolean shuriken = rnd.nextBoolean();
-            boolean jefe = rnd.nextBoolean();
-            if (shuriken) {
-                if (jefe) enemigos.add(new JefeShuriken("Jefe Shuriken " + (i+1)));
-                else enemigos.add(new LanzadorShuriken("Shuriken " + (i+1), false));
-            } else {
-                if (jefe) enemigos.add(new JefeShadow("Jefe Sombra " + (i+1)));
-                else enemigos.add(new ShadowNinja("Sombra " + (i+1), false));
+        // Crear enemigos aleatorios entre 1 y 3
+        int cantidadEnemigos = (int) (Math.random() * 3) + 1;
+        ArrayList<Enemigo> enemigos = new ArrayList<>();
+        for (int i = 0; i < cantidadEnemigos; i++)
+        {
+            double tipo = Math.random(); // tipo de enemigo (thrower o shadow)
+            boolean esJefe = Math.random() < 0.25; // 25% de probabilidad de que sea jefe
+
+            if (tipo < 0.5)
+            {
+                enemigos.add(esJefe ? new JefeShuriken("Jefe Shuriken" + (i + 1)) : new LanzadorShuriken("Lanzador " + (i + 1), false));
+            }
+            
+            else
+            {
+                enemigos.add(esJefe ? new JefeShadow("Jefe Shadow" + (i + 1)) : new ShadowNinja("Sombra " + (i + 1), false));
             }
         }
 
+        // Crear batalla
         Batalla batalla = new Batalla(jugador, enemigos);
-        BatallaController controlador = new BatallaController(batalla);
 
-        // Registrar mensajes de inicio
-        batalla.registrarAccion(jugador.mostrarMensaje("start"));
-        for (Enemigo e : enemigos) batalla.registrarAccion(e.mostrarMensaje("start"));
+        // Bucle principal de combate
+        while (jugador.estaVivo() && !batalla.obtenerEnemigosVivos().isEmpty())
+        {
+            System.out.println("\n===== ESTADO DE LA BATALLA =====");
+            System.out.println(jugador.getNombre() + jugador.getTag() + " - HP: " + jugador.getHp());
 
-        boolean salir = false;
-        // Bucle principal: se cumple la condición de terminación sin usar while(true)+break
-        while (!salir && jugador.estaVivo() && !batalla.obtenerEnemigosVivos().isEmpty()) {
-
-            // Mostrar estado
-            System.out.println("\n--- Estado ---");
-            ArrayList<Combatiente> todos = batalla.obtenerTodosLosCombatientes();
-            for (Combatiente c : todos) {
-                System.out.println(c.toString() + (c instanceof Jugador ? " [Jugador]" : ""));
+            for (Enemigo e : enemigos)
+            {
+                if (e.estaVivo())
+                {
+                    System.out.println(e.getNombre() + e.getTag() + " - HP: " + e.getHp());
+                }
             }
 
-            // Mostrar últimas 3 acciones
-            System.out.println("\n--- Registro (últimas 3) ---");
-            ArrayList<String> log = batalla.getRegistroAcciones();
-            int start = Math.max(0, log.size() - 3);
-            for (int i = start; i < log.size(); i++) System.out.println(" * " + log.get(i));
+            System.out.println("\n--- Turno de " + jugador.getNombre() + jugador.getTag() + " ---");
+            System.out.println("1. Atacar");
+            System.out.println("2. Usar ítem");
+            System.out.print("Elija una acción: ");
+            int opcion = sc.nextInt();
 
-            // Menú del jugador
-            System.out.println("\n--- Tu turno: " + jugador.getNombre() + " ---");
-            System.out.println("1) Atacar");
-            System.out.println("2) Usar ítem");
-            System.out.println("3) Pasar turno");
-            System.out.println("4) Salir de la batalla");
-            System.out.print("Elige opción (1-4): ");
-            int accion = 0;
-            try { accion = Integer.parseInt(scanner.nextLine().trim()); } catch (Exception e) { accion = 0; }
-
-            if (accion == 1) {
-                // Atacar: elegir enemigo objetivo
-                ArrayList<Enemigo> vivos = batalla.obtenerEnemigosVivos();
-                if (vivos.isEmpty()) {
-                    batalla.registrarAccion("No hay enemigos para atacar.");
-                } else {
-                    System.out.println("Elige enemigo a atacar:");
-                    for (int i = 0; i < vivos.size(); i++) System.out.println((i+1) + ") " + vivos.get(i).getNombre());
-                    int sel = 0;
-                    try { sel = Integer.parseInt(scanner.nextLine().trim()); } catch (Exception e) { sel = 0; }
-                    if (sel < 1 || sel > vivos.size()) {
-                        System.out.println("Selección inválida.");
-                        batalla.registrarAccion(jugador.getNombre() + " intentó atacar pero escogió mal.");
-                    } else {
-                        Enemigo objetivo = vivos.get(sel - 1);
-                        String res = jugador.atacar(objetivo);
-                        batalla.registrarAccion(res);
-                    }
+            if (opcion == 1)
+            {
+                // Mostrar enemigos vivos y pedir opción
+                ArrayList<Integer> indicesVivos = batalla.getIndicesEnemigosVivos();
+                if (indicesVivos.isEmpty())
+                {
+                    System.out.println("No hay enemigos vivos.");
                 }
-            } else if (accion == 2) {
-                // Usar ítem
-                ArrayList<Item> inv = jugador.getItems();
-                if (inv.isEmpty()) {
-                    batalla.registrarAccion("No tienes ítems disponibles.");
-                } else {
-                    System.out.println("Inventario:");
-                    for (int i = 0; i < inv.size(); i++) {
-                        Item it = inv.get(i);
-                        System.out.println((i+1) + ") " + it.getNombre() + " (cant: " + it.getCantidad() +
-                                ", usos: " + it.getUsosRestantes() + ")");
+                
+                else
+                {
+                    System.out.println("Seleccione el enemigo a atacar:");
+                    for (int i = 0; i < indicesVivos.size(); i++)
+                    {
+                        Enemigo e = enemigos.get(indicesVivos.get(i));
+                        System.out.println((i + 1) + ". " + e.getNombre() + e.getTag() + " - HP: " + e.getHp());
                     }
-                    System.out.print("Elige número de ítem: ");
-                    int sel = 0;
-                    try { sel = Integer.parseInt(scanner.nextLine().trim()); } catch (Exception e) { sel = 0; }
-                    if (sel < 1 || sel > inv.size()) {
-                        System.out.println("Ítem inválido.");
-                        batalla.registrarAccion(jugador.getNombre() + " intentó usar un ítem inválido.");
-                    } else {
-                        // elegir objetivo: Yo mismo o enemigo
-                        System.out.println("Objetivo:");
-                        System.out.println("1) Yo mismo");
-                        ArrayList<Enemigo> vivos = batalla.obtenerEnemigosVivos();
-                        for (int i = 0; i < vivos.size(); i++) System.out.println((i+2) + ") " + vivos.get(i).getNombre());
-                        int tgt = 0;
-                        try { tgt = Integer.parseInt(scanner.nextLine().trim()); } catch (Exception e) { tgt = 0; }
-                        Combatiente objetivo = null;
-                        if (tgt == 1) objetivo = jugador;
-                        else if (tgt >= 2 && tgt <= vivos.size() + 1) objetivo = vivos.get(tgt - 2);
-                        else objetivo = null;
 
-                        boolean ok = jugador.usarItem(sel - 1, batalla, objetivo);
-                        if (!ok) {
-                            batalla.registrarAccion(jugador.getNombre() + " falló al intentar usar el ítem.");
+                    int opcionEnemigo = -1;
+                    while (opcionEnemigo < 1 || opcionEnemigo > indicesVivos.size())
+                    {
+                        System.out.print("Ingrese el número del enemigo: ");
+                        if (sc.hasNextInt())
+                        {
+                            opcionEnemigo = sc.nextInt();
+                        }
+                        
+                        else
+                        {
+                            sc.next();
+                            opcionEnemigo = -1;
                         }
                     }
+
+                    int objetivo = batalla.getIndiceEnemigoVivoPorOpcion(opcionEnemigo);
+                    if (objetivo != -1)
+                    {
+                        jugador.atacar(enemigos.get(objetivo));
+                    }
                 }
-            } else if (accion == 3) {
-                batalla.registrarAccion(jugador.getNombre() + " decide pasar el turno.");
-            } else if (accion == 4) {
-                salir = true;
-                batalla.registrarAccion(jugador.getNombre() + " ha decidido retirarse.");
-            } else {
-                System.out.println("Opción inválida.");
+            }
+            
+            else if (opcion == 2)
+            {
+                batalla.mostrarItems(jugador);
+                System.out.print("Seleccione el número de ítem: ");
+                int idx = sc.nextInt();
+                ArrayList<Integer> indicesVivos2 = batalla.getIndicesEnemigosVivos();
+                if (indicesVivos2.isEmpty())
+                {
+                    System.out.println("No hay enemigos vivos.");
+                }
+                
+                else
+                {
+                    System.out.println("Seleccione el enemigo a atacar:");
+                    for (int i = 0; i < indicesVivos2.size(); i++)
+                    {
+                        Enemigo e = enemigos.get(indicesVivos2.get(i));
+                        System.out.println((i + 1) + ". " + e.getNombre() + e.getTag() + " - HP: " + e.getHp());
+                    }
+
+                    int opcionEnemigo = -1;
+                    while (opcionEnemigo < 1 || opcionEnemigo > indicesVivos2.size())
+                    {
+                        System.out.print("Ingrese el número del enemigo: ");
+                        String input = sc.nextLine();
+                        try
+                        {
+                            opcionEnemigo = Integer.parseInt(input);
+                        }
+                        
+                        catch (NumberFormatException e)
+                        {
+                            opcionEnemigo = -1;
+                        }
+                    }
+
+                    int objetivo = batalla.getIndiceEnemigoVivoPorOpcion(opcionEnemigo);
+                    if (objetivo != -1)
+                    {
+                        Item item = jugador.getItems().get(idx - 1); // si el usuario elige desde 1
+                        jugador.usarItem(item, batalla, enemigos.get(objetivo));
+                    }
+                }
             }
 
-            // Enemigos realizan sus turnos (si el jugador aún vive)
-            if (jugador.estaVivo()) {
-                controlador.ejecutarTurnosEnemigos();
+            // Turnos enemigos
+            for (Enemigo e : enemigos)
+            {
+                if (e.estaVivo())
+                {
+                    System.out.println("\n--- Turno de " + e.getNombre() + e.getTag() + " ---");
+                    e.tomarTurno(batalla);
+                }
             }
 
-            // Avanzar efectos y registrar sus logs
+            // Actualizar efectos de estado, si hay
             batalla.avanzarEfectos();
         }
 
-        // Resultado final, mostrado en Main
-        System.out.println("\n--- Resultado ---");
-        if (!jugador.estaVivo()) {
-            System.out.println(jugador.mostrarMensaje("die"));
-        } else if (batalla.obtenerEnemigosVivos().isEmpty()) {
-            System.out.println(jugador.mostrarMensaje("win"));
-        } else if (salir) {
-            System.out.println("Batalla finalizada por decisión del jugador.");
+        // Resultado final
+        System.out.println("\n===== RESULTADO =====");
+        if (jugador.estaVivo())
+        {
+            System.out.println("¡Has ganado el combate!");
+        }
+        
+        else
+        {
+            System.out.println("Has sido derrotado...");
         }
 
-        // Mostrar registro completo al finalizar (opcional)
-        System.out.println("\n--- Registro completo ---");
-        for (String s : batalla.getRegistroAcciones()) System.out.println(" * " + s);
-
-        scanner.close();
+        sc.close();
     }
 }

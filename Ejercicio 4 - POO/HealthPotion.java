@@ -19,4 +19,10 @@ public class HealthPotion extends Item
         String msg = usuario.getNombre() + " usa Poción de Vida y recupera " + actualHealth + " HP.";
         return msg;
     }
+
+    @Override
+    public String toString()
+    {
+        return "Poción de Vida (+" + healthAmount + " HP)";
+    }
 }

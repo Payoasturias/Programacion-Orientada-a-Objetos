@@ -20,4 +20,10 @@ public class AumentoAtaque extends Item
 
         return usuario.getNombre() + " usa Aumento de Ataque (+" + incremento + " ATK por " + duracion + " turnos).";
     }
+
+    @Override
+    public String toString()
+    {
+        return "Aumento de Ataque (+" + incremento + " ATK, " + duracion + " turnos)";
+    }
 }

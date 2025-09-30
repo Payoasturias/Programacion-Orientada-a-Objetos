@@ -9,7 +9,7 @@ public class JefeShadow extends ShadowNinja
     }
 
     @Override
-    public String habilidadEspecial(Battle batalla)
+    public String habilidadEspecial(Batalla batalla)
     {
         String base = super.habilidadEspecial(batalla);
         Jugador j = batalla.getJugador();

@@ -63,6 +63,9 @@ public abstract class Combatiente
     // Cada subclase define como toma su turno (puede devolver una lista de acciones o registro.)
     public abstract java.util.ArrayList<String> tomarTurno(Batalla batalla);
 
+    // Devuelve una etiqueta identificadora del tipo de combatiente.
+    public abstract String getTag();
+
     // Getters y Setters
 
     public String getNombre()

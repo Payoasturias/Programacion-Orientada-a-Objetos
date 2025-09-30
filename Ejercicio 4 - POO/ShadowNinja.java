@@ -22,7 +22,7 @@ public class ShadowNinja extends Enemigo
     }
 
     @Override
-    public String habilidadEspecial(Battle batalla)
+    public String habilidadEspecial(Batalla batalla)
     {
         this.evasivoProximoTurno = true;
         String mensaje = nombre + " se vuelve evasivo (próximo turno).";
@@ -44,7 +44,7 @@ public class ShadowNinja extends Enemigo
     @Override
     public String atacar(Combatiente objetivo)
     {
-        // si intenta evadir, puede evitar ser dañado (esto se aplica en Battle al calcular daño).
+        // si intenta evadir, puede evitar ser dañado (esto se aplica en Batalla al calcular daño).
         return super.atacar(objetivo);
     }
 }

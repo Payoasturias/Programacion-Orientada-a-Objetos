@@ -9,7 +9,7 @@ public class JefeShuriken extends LanzadorShuriken
     }
 
     @Override
-    public String habilidadEspecial(Battle batalla)
+    public String habilidadEspecial(Batalla batalla)
     {
         Jugador jugador = batalla.getJugador();
 
